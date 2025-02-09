@@ -1,10 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include"funcoes.h"
+#include "funcoes.h"
 #include "ws2818b.pio.h"
-
-
-
 
 #define I2C_PORT i2c1
 #define I2C_SDA 14
@@ -42,6 +39,7 @@ uint matrizint[5][5] = {
 //-----VARIÁVEIS GLOBAIS-----
 uint8_t _intensidade_ = 64;
 int num = 0;
+ssd1306_t ssd;
 
 //-----PROTÓTIPOS-----
 void inicializacao_maquina_pio(uint pino);
@@ -52,103 +50,90 @@ void escrever_no_buffer();
 void desenho(char num);
 void piscar_led();
 
-void inicializacao_dos_pinos(){
-    gpio_init(LED_AZUL);
-    gpio_init(LED_VERDE);
-    gpio_set_dir(LED_AZUL, GPIO_OUT);
-    gpio_set_dir(LED_VERDE, GPIO_OUT);
-    gpio_init(BOTAO_A);
-    gpio_init(BOTAO_B);
-    gpio_set_dir(BOTAO_A, GPIO_IN);
-    gpio_set_dir(BOTAO_B, GPIO_IN);
-    gpio_pull_up(BOTAO_A);
-    gpio_pull_up(BOTAO_B);
+void inicializacao_dos_pinos()
+{
+	gpio_init(LED_AZUL);
+	gpio_init(LED_VERDE);
+	gpio_set_dir(LED_AZUL, GPIO_OUT);
+	gpio_set_dir(LED_VERDE, GPIO_OUT);
+	gpio_init(BOTAO_A);
+	gpio_init(BOTAO_B);
+	gpio_set_dir(BOTAO_A, GPIO_IN);
+	gpio_set_dir(BOTAO_B, GPIO_IN);
+	gpio_pull_up(BOTAO_A);
+	gpio_pull_up(BOTAO_B);
 
-    i2c_init(I2C_PORT, 400 * 1000);
-    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C); // Defina a função do pino GPIO para I2C
-    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C); // Defina a função do pino GPIO para I2C
-    gpio_pull_up(I2C_SDA); // Pull up na linha de dados
-    gpio_pull_up(I2C_SCL); // Pull up na linha de clock
+	i2c_init(I2C_PORT, 400 * 1000);
+	gpio_set_function(I2C_SDA, GPIO_FUNC_I2C); // Defina a função do pino GPIO para I2C
+	gpio_set_function(I2C_SCL, GPIO_FUNC_I2C); // Defina a função do pino GPIO para I2C
+	gpio_pull_up(I2C_SDA);										 // Pull up na linha de dados
+	gpio_pull_up(I2C_SCL);										 // Pull up na linha de clock
 }
 
+char matriz_0[5][5] = {
+		{'*', 'Y', 'Y', 'Y', '*'},
+		{'*', 'Y', '*', 'Y', '*'},
+		{'*', 'Y', '*', 'Y', '*'},
+		{'*', 'Y', '*', 'Y', '*'},
+		{'*', 'Y', 'Y', 'Y', '*'}};
+char matriz_1[5][5] = {
+		{'*', '*', 'W', '*', '*'},
+		{'*', 'W', 'W', '*', '*'},
+		{'*', '*', 'W', '*', '*'},
+		{'*', '*', 'W', '*', '*'},
+		{'*', 'W', 'W', 'W', '*'}};
+char matriz_2[5][5] = {
+		{'*', 'B', 'B', 'B', '*'},
+		{'*', '*', '*', 'B', '*'},
+		{'*', 'B', 'B', 'B', '*'},
+		{'*', 'B', '*', '*', '*'},
+		{'*', 'B', 'B', 'B', '*'}};
+char matriz_3[5][5] = {
+		{'*', 'R', 'R', 'R', '*'},
+		{'*', '*', '*', 'R', '*'},
+		{'*', '*', 'R', 'R', '*'},
+		{'*', '*', '*', 'R', '*'},
+		{'*', 'R', 'R', 'R', '*'}};
+char matriz_4[5][5] = {
+		{'*', 'G', '*', 'G', '*'},
+		{'*', 'G', '*', 'G', '*'},
+		{'*', 'G', 'G', 'G', '*'},
+		{'*', '*', '*', 'G', '*'},
+		{'*', '*', '*', 'G', '*'}};
 
-char matriz_0[5][5]={
-    {'*','Y','Y','Y','*'},
-    {'*','Y','*','Y','*'},
-    {'*','Y','*','Y','*'},
-    {'*','Y','*','Y','*'},
-    {'*','Y','Y','Y','*'}
-   };
-  char matriz_1[5][5]={
-    {'*','*','W','*','*'},
-    {'*','W','W','*','*'},
-    {'*','*','W','*','*'},
-    {'*','*','W','*','*'},
-    {'*','W','W','W','*'}
-   };
-  char matriz_2[5][5]={
-    {'*','B','B','B','*'},
-    {'*','*','*','B','*'},
-    {'*','B','B','B','*'},
-    {'*','B','*','*','*'},
-    {'*','B','B','B','*'}
-   };
-  char matriz_3[5][5]={
-    {'*','R','R','R','*'},
-    {'*','*','*','R','*'},
-    {'*','*','R','R','*'},
-    {'*','*','*','R','*'},
-    {'*','R','R','R','*'}
-   };
-  char matriz_4[5][5]={
-    {'*','G','*','G','*'},
-    {'*','G','*','G','*'},
-    {'*','G','G','G','*'},
-    {'*','*','*','G','*'},
-    {'*','*','*','G','*'}
-   };
-  
-  char matriz_5[5][5]={
-    {'*','P','P','P','*'},
-    {'*','P','*','*','*'},
-    {'*','P','P','P','*'},
-    {'*','*','*','P','*'},
-    {'*','P','P','P','*'}
-   };
-  
-   char matriz_6[5][5]={
-    {'*','C','C','C','*'},
-    {'*','C','*','*','*'},
-    {'*','C','C','C','*'},
-    {'*','C','*','C','*'},
-    {'*','C','C','C','*'}
-   };
-  
-   char matriz_7[5][5]={
-    {'*','Y','Y','Y','*'},
-    {'*','*','*','Y','*'},
-    {'*','*','*','Y','*'},
-    {'*','*','*','Y','*'},
-    {'*','*','*','Y','*'}
-   };
-   char matriz_8[5][5]={
-    {'*','W','W','W','*'},
-    {'*','W','*','W','*'},
-    {'*','W','W','W','*'},
-    {'*','W','*','W','*'},
-    {'*','W','W','W','*'}
-   };
-  
-   char matriz_9[5][5]={
-    {'*','G','G','G','*'},
-    {'*','G','*','G','*'},
-    {'*','G','G','G','*'},
-    {'*','*','*','G','*'},
-    {'*','G','G','G','*'}
-   };
+char matriz_5[5][5] = {
+		{'*', 'P', 'P', 'P', '*'},
+		{'*', 'P', '*', '*', '*'},
+		{'*', 'P', 'P', 'P', '*'},
+		{'*', '*', '*', 'P', '*'},
+		{'*', 'P', 'P', 'P', '*'}};
 
+char matriz_6[5][5] = {
+		{'*', 'C', 'C', 'C', '*'},
+		{'*', 'C', '*', '*', '*'},
+		{'*', 'C', 'C', 'C', '*'},
+		{'*', 'C', '*', 'C', '*'},
+		{'*', 'C', 'C', 'C', '*'}};
 
+char matriz_7[5][5] = {
+		{'*', 'Y', 'Y', 'Y', '*'},
+		{'*', '*', '*', 'Y', '*'},
+		{'*', '*', '*', 'Y', '*'},
+		{'*', '*', '*', 'Y', '*'},
+		{'*', '*', '*', 'Y', '*'}};
+char matriz_8[5][5] = {
+		{'*', 'W', 'W', 'W', '*'},
+		{'*', 'W', '*', 'W', '*'},
+		{'*', 'W', 'W', 'W', '*'},
+		{'*', 'W', '*', 'W', '*'},
+		{'*', 'W', 'W', 'W', '*'}};
 
+char matriz_9[5][5] = {
+		{'*', 'G', 'G', 'G', '*'},
+		{'*', 'G', '*', 'G', '*'},
+		{'*', 'G', 'G', 'G', '*'},
+		{'*', '*', '*', 'G', '*'},
+		{'*', 'G', 'G', 'G', '*'}};
 
 //-----FUNÇÕES COMPLEMENTARES-----
 // Inicializa a máquina PIO para controle da matriz de LEDs.
@@ -184,9 +169,9 @@ void iniciar_pino_gpio()
 	// Inicializa os pinos GPIO.
 	gpio_init(LED_VERDE);
 	gpio_set_dir(LED_VERDE, GPIO_OUT);
-    gpio_init(LED_AZUL);
-    gpio_set_dir(LED_AZUL, GPIO_OUT);
-	//botoes
+	gpio_init(LED_AZUL);
+	gpio_set_dir(LED_AZUL, GPIO_OUT);
+	// botoes
 	gpio_init(BOTAO_A);
 	gpio_set_dir(BOTAO_A, GPIO_IN);
 	gpio_pull_up(BOTAO_A);
@@ -231,7 +216,7 @@ void limpar_o_buffer()
 		atribuir_cor_ao_led(i, 0, 0, 0, 0);
 	}
 }
-	// Desenha o número escolhido
+// Desenha o número escolhido
 void desenho(char num)
 { // Desenha o número escolhido
 	char(*matriz)[5];
@@ -279,7 +264,7 @@ void desenho(char num)
 	for (int x = 0; x < tamanho_matriz; x++)
 	{
 		for (int y = 0; y < tamanho_matriz; y++)
-		{  // R, G, B, Y, P,W,C
+		{ // R, G, B, Y, P,W,C
 			if (matriz[x][y] == 'R')
 			{
 				atribuir_cor_ao_led(matrizint[x][y], 255, 0, 0, _intensidade_);
@@ -317,4 +302,24 @@ void desenho(char num)
 		escrever_no_buffer();
 		sleep_ms(10); // 300ms entre as mudanças de cor
 	}
+}
+
+void ler_caractere(char caractere)
+{
+	char mensagem[2][20] = {"Caractere ", "Numero "};
+	uint registro_de_tipo;
+	if (caractere >= 'A' && caractere <= 'Z' || caractere >= 'a' && caractere <= 'z')
+	{
+		registro_de_tipo = 0;
+		mensagem[0][10] = caractere;
+	}
+	else if (caractere >= '0' && caractere <= '9')
+	{
+		registro_de_tipo = 1;
+		mensagem[1][7] = caractere;
+	}
+	ssd1306_fill(&ssd, false);
+	ssd1306_rect(&ssd, 3, 3, 122, 58, true, false);
+	ssd1306_draw_string(&ssd, mensagem[registro_de_tipo], 8, 10);
+	ssd1306_send_data(&ssd);
 }
