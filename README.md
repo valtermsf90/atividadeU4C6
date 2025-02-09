@@ -55,6 +55,8 @@ Este projeto implementa o controle de uma matriz de LED e um display OLED utiliz
 - Pressione `Botão B` para alternar o LED Azul e exibir mensagens no OLED.
 - Digite um caractere no terminal para exibi-lo na matriz de LED.
 
+link repositorio: https://github.com/valtermsf90/atividadeU4C6
+
 ## Autor
 Valter Machado Silva Filho
 
