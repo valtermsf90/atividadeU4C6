@@ -45,10 +45,7 @@ Este projeto implementa o controle de uma matriz de LED e um display OLED utiliz
    make
    ```
 3. Envie o arquivo `.uf2` gerado para o Raspberry Pi Pico W.
-4. Conecte-se ao terminal para visualizar as saídas e interagir com o sistema:
-   ```sh
-   minicom -b 115200 -o -D /dev/ttyUSB0
-   ```
+``
 
 ## Uso
 - Pressione `Botão A` para alternar o LED Verde e exibir mensagens no OLED.
@@ -56,6 +53,7 @@ Este projeto implementa o controle de uma matriz de LED e um display OLED utiliz
 - Digite um caractere no terminal para exibi-lo na matriz de LED.
 
 link repositorio: https://github.com/valtermsf90/atividadeU4C6
+link video demostração : https://drive.google.com/file/d/1eDJdlhOjuq0rpfF7cJDzVKEyh5gHMotH/view?usp=sharing
 
 ## Autor
 Valter Machado Silva Filho
